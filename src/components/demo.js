@@ -1,50 +1,68 @@
 import React, { useState, useEffect } from 'react'
 
 export default function ExchangeRate() {
-  const [Rate, fetchRate] = useState({
-    'status': 'loadding'
-  })
+  const currencies = ['VND', 'USD', 'JPY']
+  const [Rates, fetchRates] = useState([]
+  )
+  const [fromCurrency, setFromCurrency] = useState('VND')
   const getData = () => {
-    fetch('https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=JPY&to_currency=VND&apikey=JB0CO9EK9Y8NC1AJ')
-      .then((res) => res.json())
-      .then((res) => {
+    const toCurrencies = []
+    currencies.forEach(currency => {
+      currency !== fromCurrency && toCurrencies.push(currency)
+    });
+    console.log(...toCurrencies)
+    toCurrencies.forEach(toCurrency => {
+      fetch(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${fromCurrency}&to_currency=${toCurrency}&apikey=JB0CO9EK9Y8NC1AJ`)
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.Note) {
+            res.status = "error"
+          }
+          else {
+            res['status'] = 'success'
+          }
+          fetchRates(prevRates => [...prevRates,res])
 
-        if(res.Note){
-          res.status="error"
-        }
-        else{
-          res['status'] = 'success'
-        }
-        fetchRate(res)
-      })
-      .catch(function (error) {
-        console.log('Looks like there was a problem: \n', error);
-      });
+        })
+        .catch(function (error) {
+          console.log('Looks like there was a problem: \n', error);
+        });
+    });
   }
+  console.log(Rates)
   useEffect(() => {
     getData()
-  }, [])
-  
-  console.log(Rate)
+    console.log(1)
+    return ()=> {
+      fetchRates([])
+    }
+  },[fromCurrency])
   return (
     <>
       <h2> Hế Lô Chị Cả</h2>
-      {(() => {
-        if (Rate['status'] == 'success') {
+     {(() => {
+      try{
+        if (Rates[0]['status'] === 'success') {
           return (
-            <h2>{Rate["Realtime Currency Exchange Rate"]["1. From_Currency Code"]}</h2>
+            <>
+            <h2>{Rates[0]["Realtime Currency Exchange Rate"]["3. To_Currency Code"]}</h2>
+            <h2>{Rates[1]["Realtime Currency Exchange Rate"]["3. To_Currency Code"]}</h2>
+            </>
           )  
         }
-        else if(Rate["status"]=="error"){
+        else if(Rates[0]["status"]==="error"){
           return (
             <h2>error</h2>
           )
         }
          else {
           return (
-            <h2>loadding...</h2>
+            <h2>loading</h2>
           )
         }
+      }catch (e){
+        console.log(e.message);
+    }
       })()}
     </>
   )
