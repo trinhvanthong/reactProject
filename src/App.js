@@ -6,7 +6,7 @@ function App() {
       <ExchangeRate />
 
     </div>
-  );
+  );git 
 }
 
 export default App;
